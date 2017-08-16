@@ -50,7 +50,7 @@ deployment(){
     su - deploy -c 'utils_pull_private_key '
 
     #safely assuming, bootstrap layers above successfully completed.
-    source /etc/profile.d/cloudfactory_utils*
+    for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
 
     # get the tag: project and run play accordingly
     DEPLOYMENT_TMP_PULL_DIR="/tmp/ops-automata" && rm -rf $DEPLOYMENT_TMP_PULL_DIR
