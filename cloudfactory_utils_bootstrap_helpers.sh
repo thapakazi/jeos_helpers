@@ -29,7 +29,7 @@ utils_install_dependent_galaxy_roles(){
 
 # override 
 bootstrap(){
-    BOOTSTRAP_BRANCH="${SCALE_BRANCH:-master}"
+    BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
     BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-devel.yml}"
     VAULT_PASS_FILE="$HOME/.vault_pass" # this is supposed to be present in JeOS
 
