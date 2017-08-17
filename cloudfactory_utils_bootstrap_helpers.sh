@@ -1,3 +1,7 @@
+self_init(){
+    # if some how, we forgot to set these vars, failsafe with defautls
+    export USERDATA_TMPDIR=${USERDATA_TMPDIR:-/tmp/userdata}
+} && self_init
 # Name: this function's sole purpose is to pull ssh key for user
 # Usage:
 #   $ su - user -c ' utils_pull_private_key '
@@ -53,7 +57,7 @@ deployment(){
     for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
 
     # get the tag: project and run play accordingly
-    DEPLOYMENT_TMP_PULL_DIR="/tmp/ops-automata" && rm -rf $DEPLOYMENT_TMP_PULL_DIR
+    DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/ops-automata" && rm -rf $DEPLOYMENT_TMP_PULL_DIR
     DEPLOYMENT_GITHUB_URL="github.com:cloudfactory/ops-automata"
     PROJECT_TO_DEPLOY=$(cloudfactory_get_value_for_tag project) #clientplatform
 
@@ -63,7 +67,7 @@ deployment(){
 
     DEBUG_FLAG=${DEBUG_FLAG:-'-vvvv'}
     ansible-pull -C $PROJECT_TO_DEPLOY --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
-		 -i local.ini -U git@${DEPLOYMENT_GITHUB_URL}.git \
+		 -U git@${DEPLOYMENT_GITHUB_URL}.git -i spinner.ini \
 		 --accept-host-key $DEPLOYMENT_PLAYBOOK  \
 		 --skip-tags=${SKIP_TAGS} -e EC2SPIN_ROLE=${EC2SPIN_ROLE} ${DEBUG_FLAG}
 }
