@@ -79,3 +79,7 @@ post_cleanup(){
     
     # rm /var/lib/cloud/instance/{sem/config_scripts_user,boot-finished}
 }
+
+utils_export_home(){
+    [ "$(/usr/bin/id -u)" = "0" ] && export HOME=/root || export HOME="/home/$(whoami)"
+}
