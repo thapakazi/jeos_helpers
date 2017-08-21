@@ -8,7 +8,7 @@ self_init(){
 #   like: export PRIVATE_KEY_PATH_IN_S3=mybucketname/path/to/my/private_key && su - user -c 'utils_pull_private_key'
 #      if your key is in other bucket and other path
 utils_pull_private_key (){
-    
+    source $USERDATA_TMPDIR/.secrets
     SSH_DIR="$HOME/.ssh" && mkdir -p $SSH_DIR
     PRIVATE_KEY_IN_LOCAL="${SSH_DIR}/id_rsa"
 
