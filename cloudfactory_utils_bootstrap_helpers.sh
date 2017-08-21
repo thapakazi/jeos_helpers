@@ -80,6 +80,25 @@ post_cleanup(){
     # rm /var/lib/cloud/instance/{sem/config_scripts_user,boot-finished}
 }
 
+
 utils_export_home(){
     [ "$(/usr/bin/id -u)" = "0" ] && export HOME=/root || export HOME="/home/$(whoami)"
+}
+
+
+# this is a temporary helper script to finalise autoscaling scripts
+utils_ansicap_with_sidekiq_supervise(){
+    BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
+    BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-devel.yml}"
+
+    BOOTSTRAP_GITHUB_URL="github.com:cloudfactory/scale"
+    BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/scale"
+
+    # we might need it somewhere while doing bundle install
+    su - deploy -c 'utils_pull_private_key'
+    [ -z "$SKIP_ANSICAP" ] \
+	&& ansible-pull -C $BOOTSTRAP_BRANCH \
+			--full -d ${BOOTSTRAP_TMP_PULL_DIR} \
+			-i 'localhost' -U git@${BOOTSTRAP_GITHUB_URL}.git \
+			--accept-host-key $BOOTSTRAP_PLAYBOOK -vvvv
 }
