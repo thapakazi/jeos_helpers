@@ -95,10 +95,34 @@ utils_ansicap_with_sidekiq_supervise(){
     BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/scale"
 
     # we might need it somewhere while doing bundle install
-    su - deploy -c 'utils_pull_private_key'
+    utils_pull_private_key
     [ -z "$SKIP_ANSICAP" ] \
 	&& ansible-pull -C $BOOTSTRAP_BRANCH \
 			--full -d ${BOOTSTRAP_TMP_PULL_DIR} \
 			-i 'localhost' -U git@${BOOTSTRAP_GITHUB_URL}.git \
 			--accept-host-key $BOOTSTRAP_PLAYBOOK -vvvv
+}
+
+utils_notify_slack(){
+    # check if slacktee is present, else get it
+    SLACKTEE_BIN='/usr/local/bin/slacktee'
+    SLACKTEE_CONFIG='/etc/slacktee.conf'
+    SLACKTEE_GITHUB='https://github.com/course-hero/slacktee'
+    SLACKTEE_CLONE_LOCAL=$USERDATA_TMPDIR/slacktee
+    SLACKTEE_CONFIG_IN_S3="${SLACKTEE_CONFIG_IN_S3:-my_s3bucket/autoscaling/.slacktee}"
+    # check if config's present, else configure
+    [ -f $SLACKTEE_BIN ] \
+	|| { git clone $SLACKTEE_GITHUB $SLACKTEE_CLONE_LOCAL \
+		 && cp $SLACKTEE_CLONE_LOCAL/slacktee.sh $SLACKTEE_BIN \
+		 && chmod +x $SLACKTEE_BIN
+	}
+
+    [ -f $SLACKTEE_CONFIG ] \
+	|| { \
+	     aws s3 cp s3://$SLACKTEE_CONFIG_IN_S3 $SLACKTEE_CONFIG \
+		 && echo "$(date) first time: just pulled the configs, sending test msg from $(hostnamectl --static)"| $SLACKTEE_BIN
+	}
+    # send msg to #dump
+    echo "$@"|$SLACKTEE_BIN -c "#dump"  # explicitly hardcoding the room name
+
 }
