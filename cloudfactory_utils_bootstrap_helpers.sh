@@ -126,3 +126,8 @@ utils_notify_slack(){
     echo "$@"|$SLACKTEE_BIN -c "#dump"  # explicitly hardcoding the room name
 
 }
+
+utils_notify_and_post_cleanup(){
+    post_cleanup
+    utils_notify_slack "From: $(hostnamectl --static): $(date): **** $(tail -n 20 $USERDATA_TMPDIR/pull.log)"
+}
