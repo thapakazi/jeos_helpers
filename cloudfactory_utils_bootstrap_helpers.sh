@@ -89,7 +89,7 @@ utils_export_home(){
 # this is a temporary helper script to finalise autoscaling scripts
 utils_ansicap_with_sidekiq_supervise(){
     BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
-    BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-devel.yml}"
+    BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-code-deploy.yml}"
 
     BOOTSTRAP_GITHUB_URL="github.com:cloudfactory/scale"
     BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/scale"
