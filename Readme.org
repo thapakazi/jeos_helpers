@@ -14,7 +14,7 @@
   grep '(){' *.sh
   #+END_SRC
 
-** Details
+** Gist about Function
    |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
    | fn()                                 | descritption(function that)                                            |                                                  |
    |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
@@ -39,6 +39,18 @@
    |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
    | utils_ansicap_with_sidekiq_supervise | pull latest codebase from github, bundles & add supervisor accordingly | this is more used for autoscaling only till now. |
    |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+* Variable, so many what/why are those ?
+  About *why*, because its give us flexibility. Most of them have defaults set for them, but in any desired case, most of them could be overwritten with same name.  
+** variable conventions
+
+   Conventions gives us intuitive awareness about their existence and usage.
+   Eg: BOOTSTRAP_BRANCH that means:
+     - its a variable inside bootstrap scope
+     - that give us flexibility to mention the branch of [[https://github.com/github/scale][bootstrapping playbook]] we want to use.( I am assuming you are aware of our design, i.e, we pull most of code using git, so we work with branches)
+   Now you can simply answer what DEPLOYMENT_BRANCH means, don't you :)
+
+   
+
 
 
 
