@@ -1,0 +1,48 @@
+#+TITLE: Readme on userdata helper scripts
+#+DATE: Wednesday, Aug 30 2017
+#+OPTIONS: num:nil toc:nil H:2
+
+
+* About
+  These function here are used in userdata section, while the machine boots. 
+
+  Some desing decision made while writing these:
+  - everything here should be generic functions: {no hardcoded varaibles(specific to CloudFactory)}
+  - scripts should be accessible from public(current convention, could change with time later)
+* More verbose details  
+   #+BEGIN_SRC bash
+  grep '(){' *.sh
+  #+END_SRC
+
+** Details
+   |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+   | fn()                                 | descritption(function that)                                            |                                                  |
+   |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+   | self_init                            | self invoking function, required for initial setups                    | sets USERDATA_TMP if not set                     |
+   | utils_pull_private_key               | pulls the private key from s3                                          | required to clone private repos                  |
+   | utils_install_dependent_galaxy_roles | installs depended galaxy roles                                         | includes: newrelic & node_exporters              |
+   | bootstrap                            | pulls & runs the bootstrapping helper playbooks(scale)                 | scale repo(equivalent to old ami state)          |
+   | deployment                           | pulls & runs the deployment scripts from ops-automata                  | can be used to make app, worker,db               |
+   | utils_export_home                    | exports HOME path considering any user                                 | root's HOME=/root/ while deploy's: /home/deploy  |
+   |                                      |                                                                        |                                                  |
+
+   |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+   | notification & cleanups fn()         |                                                                        |                                                  |
+   |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+   | post_cleanup                         | cleans the all temporary supporting files & keys                       |                                                  |
+   | utils_notify_slack                   | configures slacktee if not present & post msg to slack#dump            |                                                  |
+   | utils_notify_and_post_cleanup        | calls post_cleanup and utils_notify_slack                              |                                                  |
+   |                                      |                                                                        |                                                  |
+
+   |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+   | other helping fn()                   |                                                                        |                                                  |
+   |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+   | utils_ansicap_with_sidekiq_supervise | pull latest codebase from github, bundles & add supervisor accordingly | this is more used for autoscaling only till now. |
+   |--------------------------------------+------------------------------------------------------------------------+--------------------------------------------------|
+
+
+
+
+
+
+
