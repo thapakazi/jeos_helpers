@@ -48,6 +48,22 @@
      - its a variable inside bootstrap scope
      - that give us flexibility to mention the branch of [[https://github.com/github/scale][bootstrapping playbook]] we want to use.( I am assuming you are aware of our design, i.e, we pull most of code using git, so we work with branches)
    Now you can simply answer what DEPLOYMENT_BRANCH means, don't you :)
+** Confusing variables
+   #+BEGIN_SRC bash
+   DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-PROJECT_TO_DEPLOY}.yml" # when deplying services: mongo/redis, this might come handy   
+   #+END_SRC
+
+   Here, it means a deployment playbook we would be pulling.
+   Eg: to deploy clientplatform stack we use ~clientplatform.yml~ in ops-automata, so we depend on *tag:* ~project: clientplatform~.
+
+   But what if we need to run ~mongodb.yml~ or other thing in ops-automata(our deployment layer defining playbook). There won't ~project: mongodb~ be tags for those.
+   Hence for those case, we can simply over-ride the variable in userdata with this flag like: 
+   #+BEGIN_SRC bash
+      export DEPLOYMENT_PLAYBOOK=mongodb.yml
+   #+END_SRC
+  
+   
+
 
    
 

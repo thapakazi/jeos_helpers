@@ -1,7 +1,9 @@
 self_init(){
     # if some how, we forgot to set these vars, failsafe with defautls
     export USERDATA_TMPDIR=${USERDATA_TMPDIR:-/tmp/userdata}
+    export ANSIBLE_DEBUG_FLAG=${ANSIBLE_DEBUG_FLAG:-'-vvvv'}
 } && self_init
+
 # Name: this function's sole purpose is to pull ssh key for user
 # Usage:
 #   $ su - user -c ' utils_pull_private_key '
@@ -33,50 +35,64 @@ utils_install_dependent_galaxy_roles(){
 
 # override 
 bootstrap(){
-    BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
-    BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-devel.yml}"
-    VAULT_PASS_FILE="$HOME/.vault_pass" # this is supposed to be present in JeOS
 
+    # vars that can be alter
+    BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
+    BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-main.yml}"
+
+    # rarely changing ones
     BOOTSTRAP_GITHUB_URL="github.com:cloudfactory/scale"
     BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/scale"
+    VAULT_PASS_FILE="$HOME/.vault_pass" # this is supposed to be present in JeOS
 
     [ -z "$SKIP_BOOTSTRAP" ] \
 	&& ansible-pull -C $BOOTSTRAP_BRANCH \
 			--full -d ${BOOTSTRAP_TMP_PULL_DIR} \
 			-i 'localhost' -U git@${BOOTSTRAP_GITHUB_URL}.git \
-			--accept-host-key $BOOTSTRAP_PLAYBOOK -vvvv \
-			--vault-password-file=${VAULT_PASS_FILE} # ||  curl http://169.254.169.254/latest/user-data | bash -xv
+			--accept-host-key $BOOTSTRAP_PLAYBOOK \
+			--vault-password-file=${VAULT_PASS_FILE} \
+			${ANSIBLE_DEBUG_FLAG} # ||  curl http://169.254.169.254/latest/user-data | bash -xv
 }
 
 deployment(){
 
     # get the keys first
-    su - deploy -c 'utils_pull_private_key '
+    su - deploy -c 'utils_pull_private_key'
 
     #safely assuming, bootstrap layers above successfully completed.
     for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
 
     # get the tag: project and run play accordingly
-    DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/ops-automata" && rm -rf $DEPLOYMENT_TMP_PULL_DIR
-    DEPLOYMENT_GITHUB_URL="github.com:cloudfactory/ops-automata"
     PROJECT_TO_DEPLOY=$(cloudfactory_get_value_for_tag project) #clientplatform
 
-    DEPLOYMENT_PLAYBOOK="${PROJECT_TO_DEPLOY}.yml"
+    # vars that can be alter
+    DEPLOYMENT_BRANCH=${DEPLOYMENT_BRANCH:-master}
+    DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-PROJECT_TO_DEPLOY}.yml" # when deplying services: mongo/redis, this might come handy
     EC2SPIN_ROLE=${EC2SPIN_ROLE:-worker}
-    SKIP_TAGS=${DEPLOMENT_SKIP_TAGS:-"ec2spin,ansicap,runit_unicorn"}
+    DEPLOYMENT_SKIP_TAGS=${DEPLOYMENT_SKIP_TAGS:-"ec2spin"}
 
-    DEBUG_FLAG=${DEBUG_FLAG:-'-vvvv'}
-    ansible-pull -C $PROJECT_TO_DEPLOY --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
-		 -U git@${DEPLOYMENT_GITHUB_URL}.git -i spinner.ini \
+    # rarely changing ones
+    DEPLOYMENT_GITHUB_URL="github.com:cloudfactory/ops-automata"
+    DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/ops-automata"
+
+    ansible-pull -C $PROJECT_TO_DEPLOY \
+		 --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
+		 -i spinner.ini -U git@${DEPLOYMENT_GITHUB_URL}.git  \
 		 --accept-host-key $DEPLOYMENT_PLAYBOOK  \
-		 --skip-tags=${SKIP_TAGS} -e EC2SPIN_ROLE=${EC2SPIN_ROLE} ${DEBUG_FLAG}
+		 --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
+		 -e EC2SPIN_ROLE=${EC2SPIN_ROLE} \
+		 ${ANSIBLE_DEBUG_FLAG}
 }
 
 post_cleanup(){
     echo "Post cleanup actions: removing the ${PRIVATE_KEY_IN_LOCAL}"
     # improve it later, i know hardcoding sucks
     rm -rf ~/.ssh/id_rsa ~deploy/.ssh/id_rsa
-    
+
+    # in future we would remove user data dir itself
+    # rm -rf $USERDATA_TMPDIR
+
+    # in cases like, we need to clean up the cloud-init files, such that userdata could run on next boot
     # rm /var/lib/cloud/instance/{sem/config_scripts_user,boot-finished}
 }
 
@@ -86,7 +102,10 @@ utils_export_home(){
 }
 
 
-# this is a temporary helper script to finalise autoscaling scripts
+# 
+# Purpose: this is a temporary helper script to finalise autoscaling scripts
+#
+# InsideIt:  it pulls private key from s3, scale repo from gitub and runs code-deploy.yml(ansicap and puts runit sidekiq run script)
 utils_ansicap_with_sidekiq_supervise(){
     BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
     BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-code-deploy.yml}"
@@ -95,7 +114,7 @@ utils_ansicap_with_sidekiq_supervise(){
     BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/scale"
 
     # we might need it somewhere while doing bundle install
-    utils_pull_private_key
+    utils_pull_private_key # safely assuming bucket name and region is exposed early on the call stack.
     [ -z "$SKIP_ANSICAP" ] \
 	&& ansible-pull -C $BOOTSTRAP_BRANCH \
 			--full -d ${BOOTSTRAP_TMP_PULL_DIR} \
@@ -103,6 +122,11 @@ utils_ansicap_with_sidekiq_supervise(){
 			--accept-host-key $BOOTSTRAP_PLAYBOOK -vvvv
 }
 
+# 
+# Purpose: this funciton is used to notify rocketchat. Mean while it also configures slacktee if its absent
+#          more on slacktee: https://github.com/course-hero/slacktee
+# InsideIt:  it configures slacktee if its absent and send msg to rocketchat in #dump room, whatever is thrown to it
+#           slacktee config(/etc/slacktee.conf) is pulled from s3, if its absent
 utils_notify_slack(){
     # check if slacktee is present, else get it
     SLACKTEE_BIN='/usr/local/bin/slacktee'
