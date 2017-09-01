@@ -67,7 +67,7 @@ deployment(){
 
     # vars that can be alter
     DEPLOYMENT_BRANCH=${DEPLOYMENT_BRANCH:-master}
-    DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-PROJECT_TO_DEPLOY}.yml" # when deplying services: mongo/redis, this might come handy
+    DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-$PROJECT_TO_DEPLOY.yml}" # when deplying services: mongo/redis, this might come handy
     EC2SPIN_ROLE=${EC2SPIN_ROLE:-worker}
     DEPLOYMENT_SKIP_TAGS=${DEPLOYMENT_SKIP_TAGS:-"ec2spin"}
 
