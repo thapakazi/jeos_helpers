@@ -10,7 +10,7 @@ self_init(){
 #   like: export PRIVATE_KEY_PATH_IN_S3=mybucketname/path/to/my/private_key && su - user -c 'utils_pull_private_key'
 #      if your key is in other bucket and other path
 utils_pull_private_key (){
-    source $USERDATA_TMPDIR/.secrets
+    [ -f $USERDATA_TMPDIR/.secrets ] && source $USERDATA_TMPDIR/.secrets # source secrets if they are available
     SSH_DIR="$HOME/.ssh" && mkdir -p $SSH_DIR
     PRIVATE_KEY_IN_LOCAL="${SSH_DIR}/id_rsa"
 
@@ -75,7 +75,7 @@ deployment(){
     DEPLOYMENT_GITHUB_URL="github.com:cloudfactory/ops-automata"
     DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/ops-automata"
 
-    ansible-pull -C $PROJECT_TO_DEPLOY \
+    ansible-pull -C ${DEPLOYMENT_BRANCH} \
 		 --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
 		 -i spinner.ini -U git@${DEPLOYMENT_GITHUB_URL}.git  \
 		 --accept-host-key $DEPLOYMENT_PLAYBOOK  \
