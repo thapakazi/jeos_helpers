@@ -39,6 +39,7 @@ bootstrap(){
     # vars that can be alter
     BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
     BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-main.yml}"
+    BOOTSTRAP_ENV="${BOOTSTRAP_ENV:-nonproduction}"
 
     # rarely changing ones
     BOOTSTRAP_GITHUB_URL="github.com:cloudfactory/scale"
@@ -51,6 +52,7 @@ bootstrap(){
 			-i 'localhost' -U git@${BOOTSTRAP_GITHUB_URL}.git \
 			--accept-host-key $BOOTSTRAP_PLAYBOOK \
 			--vault-password-file=${VAULT_PASS_FILE} \
+			-e BOOTSTRAP_ENV=${BOOTSTRAP_ENV} \
 			${ANSIBLE_DEBUG_FLAG} # ||  curl http://169.254.169.254/latest/user-data | bash -xv
 }
 
