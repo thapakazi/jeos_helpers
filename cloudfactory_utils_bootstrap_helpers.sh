@@ -37,22 +37,22 @@ utils_install_dependent_galaxy_roles(){
 bootstrap(){
 
     # vars that can be alter
-    BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-master}"
+    BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-devel}"
     BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-main.yml}"
-    BOOTSTRAP_ENV="${BOOTSTRAP_ENV:-nonproduction}"
 
     # rarely changing ones
-    BOOTSTRAP_GITHUB_URL="github.com:cloudfactory/scale"
-    BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/scale"
+    BOOTSTRAP_GITHUB_REPO="scale"
+    BOOTSTRAP_GITHUB_URL="github.com:cloudfactory/$BOOTSTRAP_GITHUB_REPO"
+    BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/$BOOTSTRAP_GITHUB_REPO"
     VAULT_PASS_FILE="$HOME/.vault_pass" # this is supposed to be present in JeOS
 
     [ -z "$SKIP_BOOTSTRAP" ] \
 	&& ansible-pull -C $BOOTSTRAP_BRANCH \
 			--full -d ${BOOTSTRAP_TMP_PULL_DIR} \
-			-i 'localhost' -U git@${BOOTSTRAP_GITHUB_URL}.git \
+			-U git@${BOOTSTRAP_GITHUB_URL}.git \
 			--accept-host-key $BOOTSTRAP_PLAYBOOK \
 			--vault-password-file=${VAULT_PASS_FILE} \
-			-e BOOTSTRAP_ENV=${BOOTSTRAP_ENV} \
+			-e ENVIRONMENT=${ENVIRONMENT} \
 			${ANSIBLE_DEBUG_FLAG} # ||  curl http://169.254.169.254/latest/user-data | bash -xv
 }
 
@@ -64,25 +64,22 @@ deployment(){
     #safely assuming, bootstrap layers above successfully completed.
     for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
 
-    # get the tag: project and run play accordingly
-    PROJECT_TO_DEPLOY=$(cloudfactory_get_value_for_tag project) #clientplatform
-
-    # vars that can be alter
-    DEPLOYMENT_BRANCH=${DEPLOYMENT_BRANCH:-master}
-    DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-$PROJECT_TO_DEPLOY.yml}" # when deplying services: mongo/redis, this might come handy
-    EC2SPIN_ROLE=${EC2SPIN_ROLE:-worker}
-    DEPLOYMENT_SKIP_TAGS=${DEPLOYMENT_SKIP_TAGS:-"ec2spin"}
+    DEPLOYMENT_BRANCH="${DEPLOYMENT_BRANCH:-master}"
+    DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-main.yml}" # when deploying services: mongo/redis, this might come handy
+    DEPLOYMENT_SKIP_TAGS="${DEPLOYMENT_SKIP_TAGS:-ec2spin}"
 
     # rarely changing ones
-    DEPLOYMENT_GITHUB_URL="github.com:cloudfactory/ops-automata"
-    DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/ops-automata"
+    DEPLOYMENT_GITHUB_REPO="$PROJECT"
+    DEPLOYMENT_GITHUB_URL="github.com:cloudfactory/$DEPLOYMENT_GITHUB_REPO"
+    DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/$DEPLOYMENT_GITHUB_REPO"
 
     ansible-pull -C ${DEPLOYMENT_BRANCH} \
 		 --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
-		 -i spinner.ini -U git@${DEPLOYMENT_GITHUB_URL}.git  \
+		 -U git@${DEPLOYMENT_GITHUB_URL}.git  \
 		 --accept-host-key $DEPLOYMENT_PLAYBOOK  \
 		 --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
-		 -e EC2SPIN_ROLE=${EC2SPIN_ROLE} \
+		 -e ROLE=${ROLE} \
+		 -e ENVIRONMENT=${ENVIRONMENT} \
 		 ${ANSIBLE_DEBUG_FLAG}
 }
 
