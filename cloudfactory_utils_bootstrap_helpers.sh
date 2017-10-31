@@ -14,11 +14,11 @@ utils_pull_private_key (){
     SSH_DIR="$HOME/.ssh" && mkdir -p $SSH_DIR
     PRIVATE_KEY_IN_LOCAL="${SSH_DIR}/id_rsa"
 
-    REGION="${REGION:-my-region-1}"
+    BUCKET_REGION="${BUCKET_REGION:-default-region}"
     PRIVATE_KEY_PATH_IN_S3="${PRIVATE_KEY_PATH_IN_S3:-my_s3bucket/autoscaling/id_rsa}"
 
     # asuming awscli is already in JEOS
-    aws s3 cp s3://${PRIVATE_KEY_PATH_IN_S3} ${PRIVATE_KEY_IN_LOCAL} --region ${REGION}
+    aws s3 cp s3://${PRIVATE_KEY_PATH_IN_S3} ${PRIVATE_KEY_IN_LOCAL} --region ${BUCKET_REGION}
     chmod 400 ${PRIVATE_KEY_IN_LOCAL}
 
     # if you reached this far
@@ -66,6 +66,7 @@ deployment(){
 
     DEPLOYMENT_BRANCH="${DEPLOYMENT_BRANCH:-master}"
     DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-main.yml}" # when deploying services: mongo/redis, this might come handy
+    DEPLOYMENT_PLAYBOOK_PATH="config/.meta/$DEPLOYMENT_PLAYBOOK"
     DEPLOYMENT_SKIP_TAGS="${DEPLOYMENT_SKIP_TAGS:-ec2spin}"
 
     # rarely changing ones
@@ -76,7 +77,7 @@ deployment(){
     ansible-pull -C ${DEPLOYMENT_BRANCH} \
 		 --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
 		 -U git@${DEPLOYMENT_GITHUB_URL}.git  \
-		 --accept-host-key $DEPLOYMENT_PLAYBOOK  \
+		 --accept-host-key $DEPLOYMENT_PLAYBOOK_PATH  \
 		 --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
 		 -e ROLE=${ROLE} \
 		 -e ENVIRONMENT=${ENVIRONMENT} \
