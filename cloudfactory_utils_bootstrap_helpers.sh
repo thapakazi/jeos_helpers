@@ -2,6 +2,7 @@ self_init(){
     # if some how, we forgot to set these vars, failsafe with defautls
     export USERDATA_TMPDIR=${USERDATA_TMPDIR:-/tmp/userdata}
     export ANSIBLE_DEBUG_FLAG=${ANSIBLE_DEBUG_FLAG:-'-vvvv'}
+    export CUSTOM_ANSIBLE_ROLES_PATH="$USERDATA_TMPDIR/ansible-roles"
 } && self_init
 
 # Name: this function's sole purpose is to pull ssh key for user
@@ -26,7 +27,12 @@ utils_pull_private_key (){
     echo "#SECURITY :: rm -rf $PRIVATE_KEY_IN_LOCAL"
 }
 
-utils_install_dependent_galaxy_roles(){
+utils_clone_deployment_roles() {
+
+    git clone git@github.com:cloudfactory/ops-automata.git "$CUSTOM_ANSIBLE_ROLES_PATH"
+}
+
+utils_install_dependent_roles(){
     # we need to install these roles 
     DEPENDENT_ROLES=( git+https://github.com/thapakazi/ansible-prometheus.git franklinkim.newrelic )
     ansible-galaxy install "${DEPENDENT_ROLES[@]}" --roles-path /etc/anisble/roles
@@ -64,6 +70,7 @@ deployment(){
     #safely assuming, bootstrap layers above successfully completed.
     for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
 
+    export ANSIBLE_ROLES_PATH="$CUSTOM_ANSIBLE_ROLES_PATH"
     DEPLOYMENT_BRANCH="${DEPLOYMENT_BRANCH:-master}"
     DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-main.yml}" # when deploying services: mongo/redis, this might come handy
     DEPLOYMENT_PLAYBOOK_PATH="config/.meta/$DEPLOYMENT_PLAYBOOK"
