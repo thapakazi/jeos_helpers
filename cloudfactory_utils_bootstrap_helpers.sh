@@ -60,7 +60,6 @@ bootstrap(){
 			-U git@${BOOTSTRAP_GITHUB_URL}.git \
 			--accept-host-key $BOOTSTRAP_PLAYBOOK \
 			--vault-password-file=${VAULT_PASS_FILE} \
-			-e ENVIRONMENT=${ENVIRONMENT} \
 			${ANSIBLE_DEBUG_FLAG} # ||  curl http://169.254.169.254/latest/user-data | bash -xv
 }
 
@@ -88,8 +87,6 @@ deployment(){
 		 -U git@${DEPLOYMENT_GITHUB_URL}.git  \
 		 --accept-host-key $DEPLOYMENT_PLAYBOOK_PATH  \
 		 --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
-		 -e ROLE=${ROLE} \
-		 -e ENVIRONMENT=${ENVIRONMENT} \
 		 ${ANSIBLE_DEBUG_FLAG}
 }
 
