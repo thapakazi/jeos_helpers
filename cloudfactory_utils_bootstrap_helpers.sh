@@ -30,7 +30,7 @@ utils_pull_private_key (){
 utils_clone_deployment_roles() {
 
     ## Improve me later please...!
-    rm -rf "$CUSTOM_ANSIBLE_ROLES_PATH"
+    [ -z $CLEAN_ANSIBLE_ROLES ] && rm -rf "$CUSTOM_ANSIBLE_ROLES_PATH"
     git clone git@github.com:cloudfactory/ops-automata.git "$CUSTOM_ANSIBLE_ROLES_PATH"
 }
 
