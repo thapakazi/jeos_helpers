@@ -123,3 +123,20 @@ utils_export_basic_env(){
     [ "$(/usr/bin/id -u)" = "0" ] && export HOME=/root || export HOME="/home/$(whoami)"
     # please add more
 }
+
+
+# get number based on parent's dir name
+# if convention is violated while making ~/service/xyz dir name
+# ...PID of this script is appended as file-name :)
+utils_get_parent_dir_num(){
+    RUNDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    NUM=$(basename ${RUNDIR} | sed 's/\([a-zA-Z_-]*\)-\([0-9]*\)$/\2/')
+
+    # check if num: http://stackoverflow.com/a/806923/2636474
+    re_num='^[0-9]+$'
+    if ! [[ $NUM =~ $re_num ]] ; then
+        NUM=$$
+    fi
+    echo $NUM
+}
+
