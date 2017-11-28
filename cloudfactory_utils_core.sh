@@ -39,7 +39,7 @@ cloudfactory_populate_ec2_tags_raw(){
 cloudfactory_get_value_for_tag(){
     [ -f "${EC2_TAGS_FILE_ALL}" ] || cloudfactory_populate_ec2_tags_raw
     tag=${1:-queues}
-    grep -w "$tag" "${EC2_TAGS_FILE_ALL}" | awk '{print $NF}'
+    awk -v t_for_tag=$tag '$2 == t_for_tag {print $NF}' "${EC2_TAGS_FILE_ALL}"
 }
 
 cloudfactory_tags_to_env(){
