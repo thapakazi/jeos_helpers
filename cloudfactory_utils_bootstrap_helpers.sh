@@ -79,12 +79,11 @@ deployment(){
 
     # rarely changing ones
     DEPLOYMENT_GITHUB_REPO="$PROJECT"
-    DEPLOYMENT_GITHUB_URL="github.com:cloudfactory/$DEPLOYMENT_GITHUB_REPO"
     DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/$DEPLOYMENT_GITHUB_REPO"
 
     ansible-pull -C ${DEPLOYMENT_BRANCH} \
 		 --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
-		 -U git@${DEPLOYMENT_GITHUB_URL}.git  \
+		 -U git@${DEPLOYMENT_GITHUB_URL:-"github.com:cloudfactory/$DEPLOYMENT_GITHUB_REPO"}.git  \
 		 --accept-host-key $DEPLOYMENT_PLAYBOOK_PATH  \
 		 --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
 		 ${ANSIBLE_DEBUG_FLAG}
