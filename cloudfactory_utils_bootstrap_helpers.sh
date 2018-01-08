@@ -74,7 +74,7 @@ deployment(){
     export ANSIBLE_ROLES_PATH="$CUSTOM_ANSIBLE_ROLES_PATH"
     DEPLOYMENT_BRANCH="${DEPLOYMENT_BRANCH:-master}"
     DEPLOYMENT_PLAYBOOK="${DEPLOYMENT_PLAYBOOK:-main.yml}" # when deploying services: mongo/redis, this might come handy
-    DEPLOYMENT_PLAYBOOK_PATH="config/.meta/$DEPLOYMENT_PLAYBOOK"
+    DEPLOYMENT_PLAYBOOK_PATH="${DEPLOYMENT_PLAYBOOK_PATH:-config/.meta/$DEPLOYMENT_PLAYBOOK}"
     DEPLOYMENT_SKIP_TAGS="${DEPLOYMENT_SKIP_TAGS:-ec2spin,ansicap}"
 
     # rarely changing ones
