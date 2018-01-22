@@ -36,7 +36,7 @@ utils_clone_deployment_roles() {
 
 utils_install_dependent_roles(){
     # we need to install these roles 
-    DEPENDENT_ROLES=( git+https://github.com/thapakazi/ansible-prometheus.git franklinkim.newrelic )
+    DEPENDENT_ROLES=( git+https://github.com/cloudfactory/ansible-prometheus.git franklinkim.newrelic )
     ansible-galaxy install "${DEPENDENT_ROLES[@]}"
 }
 
