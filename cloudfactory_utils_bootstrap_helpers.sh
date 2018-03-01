@@ -77,6 +77,7 @@ deployment(){
 
     # get the keys first
     su - deploy -c 'utils_pull_private_key'
+    su - deploy -c 'utils_pull_vault_pass'
 
     #safely assuming, bootstrap layers above successfully completed.
     for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
