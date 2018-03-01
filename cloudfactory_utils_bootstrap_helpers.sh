@@ -27,6 +27,16 @@ utils_pull_private_key (){
     echo "#SECURITY :: rm -rf $PRIVATE_KEY_IN_LOCAL"
 }
 
+utils_pull_vault_pass() {
+    BUCKET_REGION="${BUCKET_REGION:-us-west-1}"
+    VAULT_PASS_PATH_IN_S3="$BUCKET/vault_pass/$PROJECT"
+    VAULT_PASS_PATH_IN_LOCAL="$HOME/.vault_pass"
+
+    #Put vault_pass in deployer's home
+    aws s3 cp s3://${VAULT_PASS_PATH_IN_S3} ${VAULT_PASS_PATH_IN_LOCAL} --region ${BUCKET_REGION}
+    chmod 600 ${VAULT_PASS_PATH_IN_LOCAL}
+}
+
 utils_clone_deployment_roles() {
 
     ## Improve me later please...!
