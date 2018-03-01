@@ -29,7 +29,7 @@ utils_pull_private_key (){
 
 utils_pull_vault_pass() {
     BUCKET_REGION="${BUCKET_REGION:-us-west-1}"
-    VAULT_PASS_PATH_IN_S3="$BUCKET/vault_pass/$PROJECT"
+    VAULT_PASS_PATH_IN_S3="$BUCKET_NAME/vault_pass/$PROJECT"
     VAULT_PASS_PATH_IN_LOCAL="$HOME/.vault_pass"
 
     #Put vault_pass in deployer's home
