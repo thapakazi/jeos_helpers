@@ -28,9 +28,11 @@ utils_pull_private_key (){
 }
 
 utils_pull_vault_pass() {
-    BUCKET_REGION="${BUCKET_REGION:-us-west-1}"
-    VAULT_PASS_PATH_IN_S3="$BUCKET_NAME/vault_pass/$PROJECT"
-    VAULT_PASS_PATH_IN_LOCAL="$HOME/.vault_pass"
+    [ -f $USERDATA_TMPDIR/.secrets ] && source $USERDATA_TMPDIR/.secrets # source secrets if they are available
+
+    VAULT_PASS_PATH_IN_S3="${BUCKET_NAME}/vault_pass/${PROJECT}"
+    VAULT_PASS_PATH_IN_LOCAL="${HOME}/.vault_pass"
+    BUCKET_NAME="${BUCKET_NAME}"
 
     #Put vault_pass in deployer's home
     aws s3 cp s3://${VAULT_PASS_PATH_IN_S3} ${VAULT_PASS_PATH_IN_LOCAL} --region ${BUCKET_REGION}
@@ -80,7 +82,7 @@ deployment(){
     su - deploy -c 'utils_pull_vault_pass'
 
     #safely assuming, bootstrap layers above successfully completed.
-    for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
+    # for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
 
     export ANSIBLE_ROLES_PATH="$CUSTOM_ANSIBLE_ROLES_PATH"
     DEPLOYMENT_BRANCH="${DEPLOYMENT_BRANCH:-master}"
@@ -92,12 +94,12 @@ deployment(){
     DEPLOYMENT_GITHUB_REPO="$PROJECT"
     DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/$DEPLOYMENT_GITHUB_REPO"
 
-    ansible-pull -C ${DEPLOYMENT_BRANCH} \
-		 --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
-		 -U git@${DEPLOYMENT_GITHUB_URL:-"github.com:cloudfactory/$DEPLOYMENT_GITHUB_REPO"}.git  \
-		 --accept-host-key $DEPLOYMENT_PLAYBOOK_PATH  \
-		 --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
-		 ${ANSIBLE_DEBUG_FLAG}
+   #  ansible-pull -C ${DEPLOYMENT_BRANCH} \
+		 # --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
+		 # -U git@${DEPLOYMENT_GITHUB_URL:-"github.com:cloudfactory/$DEPLOYMENT_GITHUB_REPO"}.git  \
+		 # --accept-host-key $DEPLOYMENT_PLAYBOOK_PATH  \
+		 # --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
+		 # ${ANSIBLE_DEBUG_FLAG}
 }
 
 post_cleanup(){
