@@ -82,7 +82,7 @@ deployment(){
     su - deploy -c 'utils_pull_vault_pass'
 
     #safely assuming, bootstrap layers above successfully completed.
-    # for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
+    for file in  /etc/profile.d/cloudfactory_utils*; do source $file; done
 
     export ANSIBLE_ROLES_PATH="$CUSTOM_ANSIBLE_ROLES_PATH"
     DEPLOYMENT_BRANCH="${DEPLOYMENT_BRANCH:-master}"
@@ -94,12 +94,12 @@ deployment(){
     DEPLOYMENT_GITHUB_REPO="$PROJECT"
     DEPLOYMENT_TMP_PULL_DIR="$USERDATA_TMPDIR/$DEPLOYMENT_GITHUB_REPO"
 
-   #  ansible-pull -C ${DEPLOYMENT_BRANCH} \
-		 # --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
-		 # -U git@${DEPLOYMENT_GITHUB_URL:-"github.com:cloudfactory/$DEPLOYMENT_GITHUB_REPO"}.git  \
-		 # --accept-host-key $DEPLOYMENT_PLAYBOOK_PATH  \
-		 # --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
-		 # ${ANSIBLE_DEBUG_FLAG}
+    ansible-pull -C ${DEPLOYMENT_BRANCH} \
+		 --full -d ${DEPLOYMENT_TMP_PULL_DIR} \
+		 -U git@${DEPLOYMENT_GITHUB_URL:-"github.com:cloudfactory/$DEPLOYMENT_GITHUB_REPO"}.git  \
+		 --accept-host-key $DEPLOYMENT_PLAYBOOK_PATH  \
+		 --skip-tags=${DEPLOYMENT_SKIP_TAGS} \
+		 ${ANSIBLE_DEBUG_FLAG}
 }
 
 post_cleanup(){
