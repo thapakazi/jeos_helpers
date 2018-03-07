@@ -30,9 +30,7 @@ utils_pull_private_key (){
 utils_pull_vault_pass() {
     [ -f $USERDATA_TMPDIR/.secrets ] && source $USERDATA_TMPDIR/.secrets # source secrets if they are available
 
-    VAULT_PASS_PATH_IN_S3="${BUCKET_NAME}/vault_pass/${PROJECT}"
     VAULT_PASS_PATH_IN_LOCAL="${HOME}/.vault_pass"
-    BUCKET_NAME="${BUCKET_NAME}"
 
     #Put vault_pass in deployer's home
     aws s3 cp s3://${VAULT_PASS_PATH_IN_S3} ${VAULT_PASS_PATH_IN_LOCAL} --region ${BUCKET_REGION}
