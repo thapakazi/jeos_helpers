@@ -1,33 +1,28 @@
 #!/bin/bash
 
-# CloudFactory Bash Utilities: Core Utility Functions
-# Version 30.10.2017
-# i.e. 30th Oct 2017
-# comment: moved from the bootstrap to jeos core
-
 export EC2_SELF_METAS='/tmp/ec2-selfmeta'
 export CUSTOM_TAGS_FILE='/tmp/.custom_tags'
 export EC2_TAGS_FILE_ALL='/tmp/ec2-tags'
 export INSTNANCE_COUNTER_VALUE='/tmp/.ec2_instance_counter'
     
-cloudfactory_generate_ec2metadata(){         
+jeos_generate_ec2metadata(){
     until ec2metadata > ${EC2_SELF_METAS}; do :; done
 }
 
-cloudfactory_get_meta(){
+jeos_get_meta(){
     meta_of="${1:-instance-id}"
-    [ -f ${EC2_SELF_METAS} ] || cloudfactory_generate_ec2metadata
+    [ -f ${EC2_SELF_METAS} ] || jeos_generate_ec2metadata
     [ -f ${EC2_SELF_METAS} ] && awk  -F': ' /${meta_of}/'{print $2}' ${EC2_SELF_METAS}
 }
 
-cloudfactory_get_instance_region(){
+jeos_get_instance_region(){
     curl -s http://169.254.169.254/latest/dynamic/instance-identity/document| awk -F\" '/region/{print $4}'
 }
 
-cloudfactory_populate_ec2_tags_raw(){
+jeos_populate_ec2_tags_raw(){
     # getting values if they are blank still
-    [ -z "${REGION}" ] && REGION=${cloudfactory_get_instance_region:-us-west-1}
-    [ -z "${INSTANCE_ID}" ] && INSTANCE_ID=$(cloudfactory_get_meta "instance-id")
+    [ -z "${REGION}" ] && REGION=${jeos_get_instance_region:-us-west-1}
+    [ -z "${INSTANCE_ID}" ] && INSTANCE_ID=$(jeos_get_meta "instance-id")
 
     until aws ec2 describe-tags --filters \
               "Name=resource-id,Values=$INSTANCE_ID" \
@@ -36,29 +31,29 @@ cloudfactory_populate_ec2_tags_raw(){
 }
 
 # EXTENSION: write a usage function 
-cloudfactory_get_value_for_tag(){
-    [ -f "${EC2_TAGS_FILE_ALL}" ] || cloudfactory_populate_ec2_tags_raw
+jeos_get_value_for_tag(){
+    [ -f "${EC2_TAGS_FILE_ALL}" ] || jeos_populate_ec2_tags_raw
     tag=${1:-queues}
     awk -v t_for_tag=$tag '$2 == t_for_tag {print $NF}' "${EC2_TAGS_FILE_ALL}"
 }
 
-cloudfactory_tags_to_env(){
-    export QUEUES=$(cloudfactory_get_value_for_tag  "queues")
-    export ROLE=$(cloudfactory_get_value_for_tag "role")
-    export ENV=$(cloudfactory_get_value_for_tag "env")
-    export PROJECT=$(cloudfactory_get_value_for_tag "project")
-    export NAME=$(cloudfactory_get_value_for_tag "Name")
+jeos_tags_to_env(){
+    export QUEUES=$(jeos_get_value_for_tag  "queues")
+    export ROLE=$(jeos_get_value_for_tag "role")
+    export ENV=$(jeos_get_value_for_tag "env")
+    export PROJECT=$(jeos_get_value_for_tag "project")
+    export NAME=$(jeos_get_value_for_tag "Name")
 
-    export INSTANCE_ID=$(cloudfactory_get_meta "instance-id")
-    export LOCAL_IPV4=$(cloudfactory_get_meta "local-ipv4")
-    export PUBLIC_HOSTNAME=$(cloudfactory_get_meta "public-hostname")
-    export REGION=$(cloudfactory_get_instance_region)
-    export ZONE=${REGION}.ec2.cloudfactory.internal
+    export INSTANCE_ID=$(jeos_get_meta "instance-id")
+    export LOCAL_IPV4=$(jeos_get_meta "local-ipv4")
+    export PUBLIC_HOSTNAME=$(jeos_get_meta "public-hostname")
+    export REGION=$(jeos_get_instance_region)
+    export ZONE=${REGION}.ec2.jeos.internal
 
 }
 
-cloudfactory_tags_to_env_refresh(){
-    rm ${EC2_TAGS_FILE_ALL} && cloudfactory_tags_to_env
+jeos_tags_to_env_refresh(){
+    rm ${EC2_TAGS_FILE_ALL} && jeos_tags_to_env
 }
 
 utils_check_if_user_is_root(){
@@ -83,14 +78,14 @@ utils_get_random_number(){
     utils_generate_random_number | tee ${INSTNANCE_COUNTER_VALUE}
 }
 
-cloudfactory_get_all_tags_with_dynamic_Name(){
+jeos_get_all_tags_with_dynamic_Name(){
     # random instance index
     export NEXT_COUNT=$(utils_get_random_number)
-    cloudfactory_tags_to_env
+    jeos_tags_to_env
     export NAME=${ROLE}${NEXT_COUNT}${NAME_TAIL_STRING}
 }
 
-cloudfactory_save_to_etc_environment(){
+jeos_save_to_etc_environment(){
     SYSMTEM_WIDE_ENVIRONMENT_FILE=/etc/environment
     SYSMTEM_WIDE_ENVIRONMENT_BACKUP_FILE="/etc/environment_$(date +%Y-%m-%d-%H-%M-%S)"
 
@@ -100,10 +95,10 @@ cloudfactory_save_to_etc_environment(){
     echo "LC_ALL=en_US.UTF-8" | tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
     echo "LANG=en_US.UTF-8" | tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
 
-    echo "RAILS_ENV=$(cloudfactory_get_value_for_tag 'env')"| tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
-    echo "RACK_ENV=$(cloudfactory_get_value_for_tag 'env')"| tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
+    echo "RAILS_ENV=$(jeos_get_value_for_tag 'env')"| tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
+    echo "RACK_ENV=$(jeos_get_value_for_tag 'env')"| tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
 
-    cloudfactory_tags_to_env
+    jeos_tags_to_env
     echo "MACHINE_NAME=${NAME}"| tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
     echo "ROLE=${ROLE}"| tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
     echo "ENV=${ENV}"| tee -a ${SYSMTEM_WIDE_ENVIRONMENT_FILE}
@@ -112,8 +107,8 @@ cloudfactory_save_to_etc_environment(){
 }
 
 utils_check_if_dynamic_tags_set_True(){
-    cloudfactory_populate_ec2_tags_raw
-    dynamic_tags=$(cloudfactory_get_value_for_tag "dynamic_tags")
+    jeos_populate_ec2_tags_raw
+    dynamic_tags=$(jeos_get_value_for_tag "dynamic_tags")
     [ ! -z "$dynamic_tags" -a "$dynamic_tags" = "True" ] && return 0
     return 1
 }

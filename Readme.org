@@ -2,12 +2,24 @@
 #+DATE: Wednesday, Aug 30 2017
 #+OPTIONS: num:nil toc:nil H:2
 
+* Making cloudfactory_jeos a generic jeos
+  Since I left my [[https://twitter.com/samit_tom/status/965954025035149313][CloudFactory]] <3 I missed so many things, so bad was the attachment I am continueing the work.
+  Here I will make few changes to start with:
+    - adding more helpers
+    - make these jeos generic : adding ~.meta~ to define for company branding
+    - adding more documentation
 
+  For backward compatbility of this script, make sure you change the helper names, it can be set in [[./meta][*.meta*]] file
+    #+BEGIN_SRC bash
+    source .meta
+    sed -i "s/jeos/$MY_COMPANY/g" core_utils.sh
+    #+END_SRC
+  
 * About
   These function here are used in userdata section, while the machine boots. 
 
   Some desing decision made while writing these:
-  - everything here should be generic functions: {no hardcoded varaibles(specific to CloudFactory)}
+  - everything here should be generic functions: {no hardcoded varaibles(specific to Mycompany)}
   - scripts should be accessible from public(current convention, could change with time later)
 * More verbose details  
    #+BEGIN_SRC bash
