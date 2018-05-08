@@ -44,23 +44,16 @@ utils_install_dependent_roles(){
 # override 
 bootstrap(){
 
-    # vars that can be alter
-    BOOTSTRAP_BRANCH="${BOOTSTRAP_BRANCH:-devel}"
-    BOOTSTRAP_PLAYBOOK="${BOOTSTRAP_PLAYBOOK:-main.yml}"
-
     # rarely changing ones
-    BOOTSTRAP_GITHUB_REPO="scale"
-    BOOTSTRAP_GITHUB_URL="github.com:cloudfactory/$BOOTSTRAP_GITHUB_REPO"
-    BOOTSTRAP_TMP_PULL_DIR="$USERDATA_TMPDIR/$BOOTSTRAP_GITHUB_REPO"
     VAULT_PASS_FILE="$HOME/.vault_pass" # this is supposed to be present in JeOS
 
     [ -z "$SKIP_BOOTSTRAP" ] \
-	&& ansible-pull -C $BOOTSTRAP_BRANCH \
-			--full -d ${BOOTSTRAP_TMP_PULL_DIR} \
-			-U git@${BOOTSTRAP_GITHUB_URL}.git \
-			--accept-host-key $BOOTSTRAP_PLAYBOOK \
+	&& ansible-pull -C ${BOOTSTRAP_BRANCH:-master} \
+			--full \
+			-U git@${BOOTSTRAP_GITHUB_URL:-github.com/thapakazi/jeos_bootstrap}.git \
+			--accept-host-key ${BOOTSTRAP_PLAYBOOK:-main.yml} \
 			--vault-password-file=${VAULT_PASS_FILE} \
-			${ANSIBLE_DEBUG_FLAG} # ||  curl http://169.254.169.254/latest/user-data | bash -xv
+			${ANSIBLE_DEBUG_FLAG}
 }
 
 deployment(){
