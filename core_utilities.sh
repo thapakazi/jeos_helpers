@@ -21,7 +21,7 @@ jeos_get_instance_region(){
 
 jeos_populate_ec2_tags_raw(){
     # getting values if they are blank still
-    [ -z "${REGION}" ] && REGION=${jeos_get_instance_region:-us-west-1}
+    [ -z "${REGION}" ] && REGION=$(jeos_get_instance_region)
     [ -z "${INSTANCE_ID}" ] && INSTANCE_ID=$(jeos_get_meta "instance-id")
 
     until aws ec2 describe-tags --filters \
@@ -48,7 +48,7 @@ jeos_tags_to_env(){
     export LOCAL_IPV4=$(jeos_get_meta "local-ipv4")
     export PUBLIC_HOSTNAME=$(jeos_get_meta "public-hostname")
     export REGION=$(jeos_get_instance_region)
-    export ZONE=${REGION}.ec2.jeos.internal
+    export ZONE=${REGION}.ec2.internal
 
 }
 

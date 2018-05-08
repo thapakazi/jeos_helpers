@@ -14,7 +14,10 @@
     source .meta
     sed -i "s/jeos/$MY_COMPANY/g" core_utils.sh
     #+END_SRC
-  
+* Dependencies & Deployments
+  - awscli: make sure you have it ~pip install aws-cli~ and configure properly
+    #bestpractice: (attach IAM Role whith instance)
+
 * About
   These function here are used in userdata section, while the machine boots. 
 
