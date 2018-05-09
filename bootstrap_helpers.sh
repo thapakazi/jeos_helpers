@@ -50,7 +50,7 @@ bootstrap(){
     [ -z "$SKIP_BOOTSTRAP" ] \
 	&& ansible-pull -C ${BOOTSTRAP_BRANCH:-master} \
 			--full \
-			-U git@${BOOTSTRAP_GITHUB_URL:-github.com/thapakazi/jeos_bootstrap}.git \
+			-U ${BOOTSTRAP_PLAYBOOK_URL:-https://github.com/thapakazi/jeos_bootstrap} \
 			--accept-host-key ${BOOTSTRAP_PLAYBOOK:-main.yml} \
 			--vault-password-file=${VAULT_PASS_FILE} \
 			${ANSIBLE_DEBUG_FLAG}
